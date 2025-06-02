@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: db_smusic
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db_smusic
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

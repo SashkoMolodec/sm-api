@@ -2,12 +2,12 @@ version: '3.9'
 
 services:
   postgres:
-    image: ankane/pgvector:latest
-    container_name: db_smusic
+    image: pgvector/pgvector:pg17
+    container_name: db_sm
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: db_smusic
+      POSTGRES_DB: db_sm
     ports:
       - "5432:5432"
     volumes:

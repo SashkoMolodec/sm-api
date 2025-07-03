@@ -1,6 +1,6 @@
 package com.sashkomusic.web.dto;
 
-import com.sashkomusic.domain.model.TagCategory;
+import com.sashkomusic.domain.model.tag.TagCategory;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 

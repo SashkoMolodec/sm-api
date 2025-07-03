@@ -1,0 +1,61 @@
+GET localhost:8080/items/all
+
+###
+
+POST localhost:8080/items
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="json"
+Content-Type: application/json
+
+{
+  "title": "At.Long.Last.ASAP",
+  "releaseYear": 2015,
+  "format": "VINYL",
+  "artists": [
+    "A$AP Rocky"
+  ],
+  "tracks": [
+    {
+      "name": "Holy Ghost",
+      "artists": [
+        "A$AP Rocky"
+      ]
+    },
+    {
+      "name": "Canal St."
+    }
+  ],
+  "tags": [
+  ]
+}
+
+--WebAppBoundary
+Content-Disposition: form-data; name="images"; filename="test_image.jpg"
+Content-Type: image/jpeg
+
+< ./test_image.jpg
+
+###
+
+POST localhost:8080/ai/search?userQuery=скрябін
+X_AI_CONVERSATION_ID: sashko
+Content-Type: application/json
+
+###
+
+POST localhost:8080/ai/ask?question=розкажи+за+другого
+X_AI_CONVERSATION_ID: sashko
+Content-Type: application/json
+
+###
+
+
+POST localhost:8080/ai/tag
+Content-Type: application/json
+
+{
+  "category": null,
+  "name": "Chill"
+}

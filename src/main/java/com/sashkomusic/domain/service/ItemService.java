@@ -1,12 +1,10 @@
 package com.sashkomusic.domain.service;
 
 import com.sashkomusic.domain.model.Item;
-import com.sashkomusic.domain.model.Tag;
+import com.sashkomusic.domain.model.tag.Tag;
 import com.sashkomusic.domain.model.Track;
 import com.sashkomusic.domain.repository.ItemRepository;
 import com.sashkomusic.web.dto.ItemDto;
-import com.sashkomusic.web.dto.TagDto;
-import com.sashkomusic.web.dto.TrackDto;
 import com.sashkomusic.web.dto.create.ItemCreateDto;
 import com.sashkomusic.web.dto.create.TrackCreateDto;
 import com.sashkomusic.web.exception.EntityNotFoundException;
@@ -26,11 +24,7 @@ public class ItemService {
     private final ItemRepository itemRepository;
 
     public List<ItemDto> findAll() {
-        List<ItemDto> itemDtos = new ArrayList<>();
-        for (Item item : itemRepository.findAll()) {
-            itemDtos.add(toDto(item));
-        }
-        return itemDtos;
+        return itemRepository.findAll().stream().map(ItemDto::of).toList();
     }
 
     public ItemDto findById(Long id) {
@@ -38,15 +32,18 @@ public class ItemService {
         if (item.isEmpty()) {
             throw new EntityNotFoundException("No item with id %s: ".formatted(id));
         }
-        return toDto(item.get());
+        return ItemDto.of(item.get());
+    }
+
+    public List<ItemDto> findRelevantByTags(Set<String> tags) {
+        return itemRepository.findByTags(tags).stream().map(ItemDto::of).toList();
     }
 
     public ItemDto create(ItemCreateDto itemCreateDto, List<MultipartFile> images) {
         List<String> artists = itemCreateDto.artists().stream()
                 .map(artistService::create).toList();
 
-        Set<Tag> tags = itemCreateDto.tags().stream()
-                .map(tagService::create).collect(Collectors.toSet());
+        Set<Tag> tags = createTags(itemCreateDto);
 
         Item item = Item.builder()
                 .title(itemCreateDto.title())
@@ -59,7 +56,16 @@ public class ItemService {
         addImages(item, images);
 
         itemRepository.save(item);
-        return toDto(item);
+        return ItemDto.of(item);
+    }
+
+    private Set<Tag> createTags(ItemCreateDto itemCreateDto) {
+        Set<Tag> tags = itemCreateDto.tags().stream()
+                .map(tagService::create).collect(Collectors.toSet());
+        Set<Tag> suggestedTags = tagService.askTags(itemCreateDto);
+
+        tags.addAll(suggestedTags);
+        return suggestedTags;
     }
 
     private List<Track> createTracks(List<TrackCreateDto> tracksDto) {
@@ -86,23 +92,5 @@ public class ItemService {
             imageUrls.add(url);
         }
         item.setImages(imageUrls);
-    }
-
-    private ItemDto toDto(Item item) {
-        List<TagDto> tags = item.getTags().stream().map(
-                tag -> new TagDto(tag.getCategory(), tag.getName(), tag.getShade())).toList();
-        List<TrackDto> tracks = item.getTracks().stream().map(
-                track -> new TrackDto(track.getPosition(), track.getName(), track.getSourceUrl())).toList();
-
-        return ItemDto.builder()
-                .id(item.getId())
-                .title(item.getTitle())
-                .releaseYear(item.getReleaseYear())
-                .format(item.getFormat())
-                .artists(item.getArtists())
-                .images(item.getImages())
-                .tags(tags)
-                .tracks(tracks)
-                .build();
     }
 }

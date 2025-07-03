@@ -1,5 +1,6 @@
 package com.sashkomusic.domain.model;
 
+import com.sashkomusic.domain.model.tag.Tag;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,14 +40,17 @@ public class Item {
     private ItemFormat format;
 
     @Column(nullable = false)
+    @Builder.Default
     private List<String> images = new ArrayList<>();
 
     @Column(nullable = false)
+    @Builder.Default
     private List<String> artists = new ArrayList<>();
 
     @ElementCollection
     @CollectionTable(name = "item_tracks")
     @OrderBy("position")
+    @Builder.Default
     private List<Track> tracks = new ArrayList<>();
 
     @ManyToMany
@@ -55,6 +59,7 @@ public class Item {
             joinColumns = @JoinColumn(name = "item_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
+    @Builder.Default
     private Set<Tag> tags = new HashSet<>();
 
     public void setTracks(List<Track> tracks) {

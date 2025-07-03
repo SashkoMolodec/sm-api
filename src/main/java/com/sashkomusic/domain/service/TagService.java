@@ -1,40 +1,32 @@
 package com.sashkomusic.domain.service;
 
-import com.sashkomusic.domain.model.Tag;
-import com.sashkomusic.domain.model.TagCategory;
+import com.sashkomusic.domain.model.tag.Tag;
+import com.sashkomusic.domain.model.tag.TagCategory;
 import com.sashkomusic.domain.repository.TagRepository;
 import com.sashkomusic.web.dto.TagDto;
-import org.springframework.ai.anthropic.AnthropicChatModel;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
+import com.sashkomusic.web.dto.create.ItemCreateDto;
+import com.sashkomusic.web.dto.create.TagResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @Service
 public class TagService {
+    private final AiService aiService;
     private final TagRepository tagRepository;
-    private final ChatClient chatClient;
-    private final static PromptTemplate askCategoryTemplate = new PromptTemplate("""
-                Categorize tag by name {name} having options {tagCategories} with fallback
-                to OTHER. Return ONLY ONE category constant in response without additional explanations.
-            """);
 
-    private final static PromptTemplate askShadeTemplate = new PromptTemplate("""
-                Give color shade for a tag using it's name: {name} and category: {category}.
-                Return only ONE name within CSS Named Colors palette without additional explanations.
-            """);
+    public Map<TagCategory, List<String>> getDictionary() {
+        return tagRepository.findAll().stream()
+                .collect(Collectors.groupingBy(Tag::getCategory, Collectors.mapping(
+                        Tag::getName, Collectors.toList()
+                )));
+    }
 
-    @Value("classpath:/promptTemplates/systemPromptTemplate.st")
-    Resource systemPromptTemplate;
-
-    public TagService(TagRepository tagRepository, AnthropicChatModel chatModel) {
-        this.tagRepository = tagRepository;
-        this.chatClient = ChatClient.create(chatModel);
+    public Set<String> getNamesDictionary() {
+        return tagRepository.findAll().stream().map(Tag::getName).collect(Collectors.toSet());
     }
 
     public Tag create(TagDto tagDto) {
@@ -45,30 +37,38 @@ public class TagService {
     private Tag buildTag(TagDto tagDto) {
         TagCategory category = tagDto.category();
         if (tagDto.category() == null) {
-            category = askCategory(tagDto.name());
+            category = aiService.askTagCategory(tagDto.name());
         }
         String shade = resolveShade(tagDto.name(), category);
 
         return new Tag(tagDto.name(), category, shade);
     }
 
-    public TagCategory askCategory(String name) {
-        Prompt prompt = askCategoryTemplate.create(Map.of("name", name,
-                "tagCategories", TagCategory.concatenated())
-        );
-        String category = chatClient.prompt(prompt)
-                .system(systemPromptTemplate).call().content();
-        return TagCategory.valueOf(category);
-    }
-
     private String resolveShade(String name, TagCategory category) {
         if (category.equals(TagCategory.OTHER)) return "gray";
-        return askShade(name, category);
+        return aiService.askTagShade(name, category);
     }
 
-    private String askShade(String name, TagCategory category) {
-        Prompt prompt = askShadeTemplate.create(Map.of("name", name, "category", category.name()));
-        return chatClient.prompt(prompt)
-                .system(systemPromptTemplate).call().content();
+    public Set<Tag> askTags(ItemCreateDto itemCreateDto) {
+        List<TagResponse> suggestedTags = aiService.askTags(itemCreateDto, getDictionary());
+        Map<Boolean, List<TagResponse>> groupedByPresence = suggestedTags.stream().collect(Collectors.partitioningBy(TagResponse::exists));
+
+        Set<Tag> existingTags = groupedByPresence.get(true).stream()
+                .map(existingTag -> tagRepository.findByCategoryAndName(existingTag.category(), existingTag.name()).get())
+                .collect(Collectors.toSet());
+        Set<Tag> newTags = createNewTags(groupedByPresence.get(false));
+
+        Set<Tag> itemTags = new HashSet<>(existingTags);
+        itemTags.addAll(newTags);
+        return itemTags;
+    }
+
+    private Set<Tag> createNewTags(List<TagResponse> tagResponses) {
+        Set<Tag> newTags = tagResponses.stream()
+                .map(newTag -> new Tag(newTag.name(), newTag.category(), newTag.shade()))
+                .collect(Collectors.toSet());
+
+        tagRepository.saveAll(newTags);
+        return newTags;
     }
 }

@@ -3,6 +3,8 @@ package com.sashkomusic.domain.model.tag;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.Objects;
 
@@ -32,6 +34,10 @@ public class Tag {
 
     @Column(nullable = false)
     private String shade;
+
+    @Column(name = "embedding", columnDefinition = "vector(1536)")
+    @JdbcTypeCode(SqlTypes.OTHER)
+    private Object embedding;
 
     public Tag(String name, TagCategory category, String shade) {
         this.name = name;

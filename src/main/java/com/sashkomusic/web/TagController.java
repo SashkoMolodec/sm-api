@@ -1,5 +1,6 @@
 package com.sashkomusic.web;
 
+import com.sashkomusic.domain.model.tag.Tag;
 import com.sashkomusic.domain.service.TagService;
 import com.sashkomusic.web.dto.TagDto;
 import lombok.RequiredArgsConstructor;
@@ -21,5 +22,11 @@ public class TagController {
     @PostMapping
     public void create(@RequestBody List<TagDto> tags) {
         tags.forEach(tagService::create);
+    }
+
+    @GetMapping("/similar")
+    public List<Tag> findSimilar(@RequestParam("query") String query,
+                                 @RequestParam(value = "limit", defaultValue = "5") int limit) {
+        return tagService.findMostSimilarByQuery(query, limit);
     }
 }

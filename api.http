@@ -45,17 +45,34 @@ Content-Type: application/json
 
 ###
 
-POST localhost:8080/ai/ask?question=розкажи+за+другого
+POST localhost:8080/ai/ask?question=розкажи+за+elton+john+альбом+хробак+не+використовуй+результати+з+rag+якщо+вони+невідповідні
 X_AI_CONVERSATION_ID: sashko
 Content-Type: application/json
 
 ###
 
-
-POST localhost:8080/ai/tag
+POST localhost:8080/ai/ask
+X_AI_CONVERSATION_ID: sashkoo
 Content-Type: application/json
 
 {
-  "category": null,
-  "name": "Chill"
+  "question": "розкажи за quincy jones"
 }
+
+###
+
+POST localhost:8080/tags
+Content-Type: application/json
+
+[
+{
+  "name": "underground music"
+}
+]
+
+###
+GET https://api.discogs.com/releases/14193174
+
+###
+# Find similar tags to a free-text query
+GET localhost:8080/tags/similar?query=unknown+music&limit=2

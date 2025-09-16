@@ -7,6 +7,8 @@ import com.sashkomusic.web.dto.TagDto;
 import com.sashkomusic.web.dto.create.ItemCreateDto;
 import com.sashkomusic.web.dto.ai.TagResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class TagService {
+    private static final Logger log = LoggerFactory.getLogger(TagService.class);
+
     private final AiService aiService;
     private final TagRepository tagRepository;
 
@@ -41,8 +45,18 @@ public class TagService {
         }
         String shade = askShade(tagDto.name(), category);
 
+        Tag tag = new Tag(tagDto.name(), category, shade);
+        setEmbedding(tagDto, tag);
+        return tag;
+    }
 
-        return new Tag(tagDto.name(), category, shade);
+    private void setEmbedding(TagDto tagDto, Tag tag) {
+        try {
+            String embedding = aiService.embedAsPgVectorLiteral(tagDto.name());
+            tag.setEmbedding(embedding);
+        } catch (Exception e) {
+            log.error("Could not create embedding for tag {}", tagDto.name(), e);
+        }
     }
 
     private String askShade(String name, TagCategory category) {
@@ -68,12 +82,16 @@ public class TagService {
         Set<Tag> newTags = tagResponses.stream()
                 .map(newTag -> new Tag(newTag.name(), newTag.category(), newTag.shade()))
                 .collect(Collectors.toSet());
-
         tagRepository.saveAll(newTags);
         return newTags;
     }
 
     public void createTagsFromDocuments(List<TagDto> tags) {
         tags.forEach(this::create);
+    }
+
+    public List<Tag> findMostSimilarByQuery(String query, int limit) {
+        String vector = aiService.embedAsPgVectorLiteral(query);
+        return tagRepository.findMostSimilar(vector, limit);
     }
 }

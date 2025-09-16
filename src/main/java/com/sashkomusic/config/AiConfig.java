@@ -1,6 +1,6 @@
 package com.sashkomusic.config;
 
-import org.springframework.ai.anthropic.AnthropicChatModel;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.vectorstore.SearchRequest;
@@ -17,7 +17,7 @@ public class AiConfig {
     Resource systemPrompt;
 
     @Bean
-    ChatClient chatClient(AnthropicChatModel chatModel,
+    ChatClient chatClient(OpenAiChatModel chatModel,
                           VectorStore vectorStore) {
         return ChatClient.create(chatModel)
                 .mutate()

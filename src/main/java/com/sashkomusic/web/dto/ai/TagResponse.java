@@ -1,4 +1,4 @@
-package com.sashkomusic.web.dto.create;
+package com.sashkomusic.web.dto.ai;
 
 import com.sashkomusic.domain.model.tag.TagCategory;
 

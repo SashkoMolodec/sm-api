@@ -5,7 +5,7 @@ import com.sashkomusic.domain.model.tag.TagCategory;
 import com.sashkomusic.domain.repository.TagRepository;
 import com.sashkomusic.web.dto.TagDto;
 import com.sashkomusic.web.dto.create.ItemCreateDto;
-import com.sashkomusic.web.dto.create.TagResponse;
+import com.sashkomusic.web.dto.ai.TagResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -39,12 +39,13 @@ public class TagService {
         if (tagDto.category() == null) {
             category = aiService.askTagCategory(tagDto.name());
         }
-        String shade = resolveShade(tagDto.name(), category);
+        String shade = askShade(tagDto.name(), category);
+
 
         return new Tag(tagDto.name(), category, shade);
     }
 
-    private String resolveShade(String name, TagCategory category) {
+    private String askShade(String name, TagCategory category) {
         if (category.equals(TagCategory.OTHER)) return "gray";
         return aiService.askTagShade(name, category);
     }
@@ -70,5 +71,9 @@ public class TagService {
 
         tagRepository.saveAll(newTags);
         return newTags;
+    }
+
+    public void createTagsFromDocuments(List<TagDto> tags) {
+        tags.forEach(this::create);
     }
 }

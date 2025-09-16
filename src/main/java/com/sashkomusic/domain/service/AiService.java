@@ -3,7 +3,7 @@ package com.sashkomusic.domain.service;
 import com.sashkomusic.domain.model.ItemFormat;
 import com.sashkomusic.domain.model.tag.TagCategory;
 import com.sashkomusic.web.dto.create.ItemCreateDto;
-import com.sashkomusic.web.dto.create.TagResponse;
+import com.sashkomusic.web.dto.ai.TagResponse;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;

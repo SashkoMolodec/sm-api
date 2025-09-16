@@ -24,10 +24,11 @@ public class SearchService {
 
     public List<ItemDto> findByRelevantTags(String userQuery) {
         Set<String> extractedTags = aiService.extractTags(userQuery, tagService.getNamesDictionary());
+
+        /*я маю знайти теги по векторних представленнях*/
         //addSimilarTags(userQuery, extractedTags);
 
-        List<ItemDto> relevantByTags = itemService.findRelevantByTags(extractedTags);
-        return relevantByTags;
+        return itemService.findRelevantByTags(extractedTags);
     }
 
     private void addSimilarTags(String userQuery, Set<String> extractedTags) {

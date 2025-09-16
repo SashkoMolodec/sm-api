@@ -4,6 +4,7 @@ import com.sashkomusic.domain.model.tag.TagCategory;
 import com.sashkomusic.domain.service.AiService;
 import com.sashkomusic.domain.service.SearchService;
 import com.sashkomusic.web.dto.ItemDto;
+import com.sashkomusic.web.dto.Question;
 import com.sashkomusic.web.dto.TagDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +25,8 @@ public class AIController {
 
     @PostMapping("/ask")
     public String ask(@RequestHeader(name = "X_AI_CONVERSATION_ID", defaultValue = "default") String conversationId,
-                      @RequestParam String question) {
-        return aiService.ask(question, conversationId);
+                      @RequestBody Question question) {
+        return aiService.ask(question.question(), conversationId);
     }
 
     @PostMapping("/search")

@@ -76,7 +76,8 @@ public class AiService {
         Prompt prompt = PromptTemplate.builder().resource(askTagShadePrompt)
                 .variables(Map.of("name", name, "category", category.name())).build().create();
 
-        return chatClient.prompt(prompt).call().content();
+        String raw = chatClient.prompt(prompt).call().content();
+        return normalizeShadeColor(raw);
     }
 
     public TagCategory askTagCategory(String name) {
@@ -118,5 +119,24 @@ public class AiService {
         }
         sb.append(']');
         return sb.toString();
+    }
+
+    private String normalizeShadeColor(String raw) {
+        if (raw == null) return "gray";
+        String s = raw.trim();
+        if (s.isEmpty()) return "gray";
+        String[] lines = s.split("\\R");
+        String candidate = s;
+        for (int i = lines.length - 1; i >= 0; i--) {
+            String line = lines[i].trim();
+            if (!line.isEmpty()) { candidate = line; break; }
+        }
+        String onlyLetters = candidate.replaceAll("[^A-Za-z]", "");
+        onlyLetters = onlyLetters.toLowerCase(Locale.ROOT);
+        if (onlyLetters.isEmpty()) {
+            onlyLetters = s.replaceAll("[^A-Za-z]", "").toLowerCase(Locale.ROOT);
+        }
+        if (onlyLetters.isEmpty()) return "gray";
+        return onlyLetters;
     }
 }

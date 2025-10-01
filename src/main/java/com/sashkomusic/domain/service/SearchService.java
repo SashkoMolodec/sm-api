@@ -1,5 +1,6 @@
 package com.sashkomusic.domain.service;
 
+import com.sashkomusic.domain.model.tag.Tag;
 import com.sashkomusic.web.dto.ItemDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.document.Document;
@@ -23,12 +24,11 @@ public class SearchService {
     private final VectorStore vectorStore;
 
     public List<ItemDto> findByRelevantTags(String userQuery) {
-        Set<String> extractedTags = aiService.extractTags(userQuery, tagService.getNamesDictionary());
+        Set<String> tags = tagService.findMostSimilarByQuery(userQuery, 5, 0.3)
+                .stream().map(Tag::getName)
+                .collect(Collectors.toSet());
 
-        /*я маю знайти теги по векторних представленнях*/
-        //addSimilarTags(userQuery, extractedTags);
-
-        return itemService.findRelevantByTags(extractedTags);
+        return itemService.findRelevantByTags(tags);
     }
 
     private void addSimilarTags(String userQuery, Set<String> extractedTags) {

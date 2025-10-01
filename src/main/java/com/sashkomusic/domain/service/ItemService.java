@@ -43,7 +43,7 @@ public class ItemService {
         List<String> artists = itemCreateDto.artists().stream()
                 .map(artistService::create).toList();
 
-        Set<Tag> tags = createTags(itemCreateDto);
+        Set<Tag> tags = resolveTags(itemCreateDto);
 
         Item item = Item.builder()
                 .title(itemCreateDto.title())
@@ -59,7 +59,7 @@ public class ItemService {
         return ItemDto.of(item);
     }
 
-    private Set<Tag> createTags(ItemCreateDto itemCreateDto) {
+    private Set<Tag> resolveTags(ItemCreateDto itemCreateDto) {
         Set<Tag> tags = itemCreateDto.tags().stream()
                 .map(tagService::create).collect(Collectors.toSet());
         Set<Tag> suggestedTags = tagService.askTags(itemCreateDto);

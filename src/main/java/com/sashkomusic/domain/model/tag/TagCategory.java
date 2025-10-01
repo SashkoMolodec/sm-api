@@ -1,5 +1,9 @@
 package com.sashkomusic.domain.model.tag;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.Getter;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +56,9 @@ public enum TagCategory {
 
     OTHER("other", "Other type of important info");
 
+    @Getter
     public final String name;
+    @Getter
     public final String description;
 
     public final static Map<String, TagCategory> dictionary =
@@ -61,10 +67,6 @@ public enum TagCategory {
     TagCategory(String name, String description) {
         this.name = name;
         this.description = description;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public static String concatenated(List<TagCategory> tagCategories) {
@@ -91,7 +93,20 @@ public enum TagCategory {
         return List.of(ARTIST, ALBUM, SONG, YEAR, LOCATION, LABEL, CONTEXT, INSTRUMENT, PERFORMANCE, CRITIC, RATING, RELATED_ARTIST, CULTURAL_REFERENCE, HISTORICAL_CONTEXT, TECHNOLOGY, OTHER);
     }
 
+    public boolean isShadeAutoGray() {
+        return List.of(BPM, KEY, DURATION, ENERGY_LEVEL, DANCEABILITY, LOUDNESS, POSITION, SIMILARITY, TRANSITIONS, PEAK_MOMENT, VOCALS_TYPE, LOOPS, MIX_BALANCE, STEM_STRUCTURE,
+                OTHER, ARTIST, ALBUM, SONG, RELATED_ARTIST).contains(this);
+    }
+
+    @JsonCreator
+    public static TagCategory fromJson(JsonNode node) {
+        if (node == null) return OTHER;
+        TagCategory byName = findByName(node.asText());
+        return byName != null ? byName : OTHER;
+    }
+
     public static TagCategory findByName(String name) {
-        return dictionary.get(name);
+        if (name == null) return null;
+        return dictionary.get(name.toLowerCase());
     }
 }

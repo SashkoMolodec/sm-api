@@ -66,7 +66,7 @@ Content-Type: application/json
 
 [
 {
-  "name": "underground music"
+  "name": "ukrainian rock"
 }
 ]
 
@@ -74,5 +74,5 @@ Content-Type: application/json
 GET https://api.discogs.com/releases/14193174
 
 ###
-# Find similar tags to a free-text query
-GET localhost:8080/tags/similar?query=unknown+music&limit=2
+# Find similar tags to a free-text query (with optional maxDistance threshold; smaller is closer)
+GET localhost:8080/tags/similar?query=ukr+rock&limit=5&maxDistance=0.3

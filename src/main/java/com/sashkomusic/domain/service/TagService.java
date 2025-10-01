@@ -3,6 +3,7 @@ package com.sashkomusic.domain.service;
 import com.sashkomusic.domain.model.tag.Tag;
 import com.sashkomusic.domain.model.tag.TagCategory;
 import com.sashkomusic.domain.repository.TagRepository;
+import com.sashkomusic.web.dto.TagCategoryDto;
 import com.sashkomusic.web.dto.TagDto;
 import com.sashkomusic.web.dto.create.ItemCreateDto;
 import com.sashkomusic.web.dto.ai.TagResponse;
@@ -22,6 +23,11 @@ public class TagService {
     private final AiService aiService;
     private final TagRepository tagRepository;
 
+    public List<Tag> findMostSimilarByQuery(String query, int limit, Double maxDistance) {
+        String vector = aiService.embedAsPgVectorLiteral(query);
+        return tagRepository.findMostSimilarWithinDistance(vector, maxDistance, limit);
+    }
+
     public Map<TagCategory, List<String>> getDictionary() {
         return tagRepository.findAll().stream()
                 .collect(Collectors.groupingBy(Tag::getCategory, Collectors.mapping(
@@ -29,8 +35,10 @@ public class TagService {
                 )));
     }
 
-    public Set<String> getNamesDictionary() {
-        return tagRepository.findAll().stream().map(Tag::getName).collect(Collectors.toSet());
+    public List<TagCategoryDto> getTagCategories() {
+        return Arrays.stream(TagCategory.values())
+                .map(category -> TagCategoryDto.of(category.getName(), category.getDescription()))
+                .collect(Collectors.toList());
     }
 
     public Tag create(TagDto tagDto) {
@@ -60,7 +68,7 @@ public class TagService {
     }
 
     private String askShade(String name, TagCategory category) {
-        if (category.equals(TagCategory.OTHER)) return "gray";
+        if (category.isShadeAutoGray()) return "gray";
         return aiService.askTagShade(name, category);
     }
 
@@ -84,14 +92,5 @@ public class TagService {
                 .collect(Collectors.toSet());
         tagRepository.saveAll(newTags);
         return newTags;
-    }
-
-    public void createTagsFromDocuments(List<TagDto> tags) {
-        tags.forEach(this::create);
-    }
-
-    public List<Tag> findMostSimilarByQuery(String query, int limit) {
-        String vector = aiService.embedAsPgVectorLiteral(query);
-        return tagRepository.findMostSimilar(vector, limit);
     }
 }

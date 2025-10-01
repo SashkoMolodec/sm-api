@@ -72,18 +72,6 @@ public class AiService {
         });
     }
 
-    public Set<String> extractTags(String userQuery, Set<String> tagDictionary) {
-        Prompt prompt = PromptTemplate.builder()
-                .resource(tagsExtractPrompt)
-                .variables(Map.of("userQuery", userQuery, "tagsList", tagDictionary.toString()))
-                .build().create();
-
-        return chatClient.prompt(prompt)
-                .call()
-                .entity(new ParameterizedTypeReference<>() {
-                });
-    }
-
     public String askTagShade(String name, TagCategory category) {
         Prompt prompt = PromptTemplate.builder().resource(askTagShadePrompt)
                 .variables(Map.of("name", name, "category", category.name())).build().create();
@@ -96,18 +84,29 @@ public class AiService {
                 "tagCategories", TagCategory.concatenatedAll())
         ).build().create();
         String category = chatClient.prompt(prompt).call().content();
-
         return TagCategory.findByName(category);
-    }
-
-    public float[] embedRaw(String text) {
-        EmbeddingResponse response = embeddingModel.embedForResponse(List.of(text));
-        return response.getResults().getFirst().getOutput();
     }
 
     public String embedAsPgVectorLiteral(String text) {
         float[] vector = embedRaw(text);
         return toPgvectorLiteral(vector);
+    }
+
+    public Set<String> extractTags(String userQuery, Set<String> tagDictionary) {
+        Prompt prompt = PromptTemplate.builder()
+                .resource(tagsExtractPrompt)
+                .variables(Map.of("userQuery", userQuery, "tagsList", tagDictionary.toString()))
+                .build().create();
+
+        return chatClient.prompt(prompt)
+                .call()
+                .entity(new ParameterizedTypeReference<>() {
+                });
+    }
+
+    private float[] embedRaw(String text) {
+        EmbeddingResponse response = embeddingModel.embedForResponse(List.of(text));
+        return response.getResults().getFirst().getOutput();
     }
 
     private String toPgvectorLiteral(float[] vector) {

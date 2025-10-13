@@ -22,6 +22,10 @@ configurations {
 repositories {
     mavenCentral()
     maven { url 'https://repo.spring.io/snapshot' }
+    maven {
+        name = "TarsosDSP repository"
+        url = "https://mvn.0110.be/releases"
+    }
 }
 
 ext {
@@ -49,6 +53,12 @@ dependencies {
     implementation 'org.flywaydb:flyway-database-postgresql'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'jakarta.validation:jakarta.validation-api:3.1.1'
+
+    implementation 'org.jsoup:jsoup:1.15.3'
+    implementation 'be.tarsos.dsp:core:2.5'
+    implementation 'be.tarsos.dsp:jvm:2.5'
+    implementation 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.postgresql:postgresql'

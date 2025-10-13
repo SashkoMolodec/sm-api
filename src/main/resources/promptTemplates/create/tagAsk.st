@@ -1,24 +1,18 @@
-Given the album title {title} by artists {artists}, format is {format}, analyze and categorize it using tags.
+Given the album title {title} by artists {artists}, and format {format}, produce tags.
 
-Use the following sources IN THIS PRIORITY ORDER:
-1) Available passed tags with categories (highest priority) — always try to map to these first.
-2) Knowledge from RAG context, if provided by the system.
-3) Your own general AI knowledge (use only if 1 and 2 do not cover the case).
+Sources IN THIS PRIORITY ORDER:
+1) RAG context (highest priority): extract tags explicitly present in the retrieved context that clearly relate to the provided artist(s) and/or the album title. Ignore unrelated snippets. Treat these as existing tags.
+2) General AI knowledge: if there are important tags not found in RAG but commonly associated with this artist/album, append them after RAG-based tags.
 
-Available tag categories:
+Allowed tag categories (format: name: description):
 {availableTagCategories}
 
-Already existing tags to choose from for each category (priority source #1):
-{availableTags}
+Rules:
+- Category must be one of the allowed category names (left side before the colon), in lowercase.
+- Deduplicate tags and avoid near-duplicates.
+- shade field: choose exactly one CSS named color, lowercase, single word; no punctuation or extra text; if unsure, use gray. Follow the same standard as the color chooser prompt.
 
-Guidelines:
-- Prefer exact or closest semantic matches from the available tags (source #1). If multiple match, choose the most specific and commonly used.
-- If no suitable tag exists in source #1, consult RAG context (source #2) for domain-specific tags or conventions.
-- Only if neither source #1 nor source #2 provides a suitable tag, propose a new tag using your AI knowledge (source #3).
-- Ensure each proposed tag is assigned the correct category from the provided categories list.
-
-Important Note! If your proposed tag does not exist among the available tags:
-- include it in the response and mark exists boolean as false
-- pick a shade color for it (use CSS Named Colors palette); if tag does exist then leave shade as null
-
-Output: Return a structured list of tags where each item includes: category, exists, name, shade. Do not add extra commentary.
+Output format (strict):
+- Return ONLY a JSON array of objects, no prose.
+- Each object must include fields: category (lowercase category name), name (string), shade (null or lowercase CSS color string).
+- Do not include any other fields, text, or comments.

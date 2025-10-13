@@ -28,13 +28,6 @@ public class TagService {
         return tagRepository.findMostSimilarWithinDistance(vector, maxDistance, limit);
     }
 
-    public Map<TagCategory, List<String>> getDictionary() {
-        return tagRepository.findAll().stream()
-                .collect(Collectors.groupingBy(Tag::getCategory, Collectors.mapping(
-                        Tag::getName, Collectors.toList()
-                )));
-    }
-
     public List<TagCategoryDto> getTagCategories() {
         return Arrays.stream(TagCategory.values())
                 .map(category -> TagCategoryDto.of(category.getName(), category.getDescription()))
@@ -44,6 +37,11 @@ public class TagService {
     public Tag create(TagDto tagDto) {
         Optional<Tag> tag = tagRepository.findByCategoryAndName(tagDto.category(), tagDto.name());
         return tag.orElseGet(() -> tagRepository.save(buildTag(tagDto)));
+    }
+
+    public Set<Tag> askTags(ItemCreateDto itemCreateDto) {
+        List<TagDto> suggestedTags = aiService.askTags(itemCreateDto);
+        return suggestedTags.stream().map(this::create).collect(Collectors.toSet());
     }
 
     private Tag buildTag(TagDto tagDto) {
@@ -70,27 +68,5 @@ public class TagService {
     private String askShade(String name, TagCategory category) {
         if (category.isShadeAutoGray()) return "gray";
         return aiService.askTagShade(name, category);
-    }
-
-    public Set<Tag> askTags(ItemCreateDto itemCreateDto) {
-        List<TagResponse> suggestedTags = aiService.askTags(itemCreateDto, getDictionary());
-        Map<Boolean, List<TagResponse>> groupedByPresence = suggestedTags.stream().collect(Collectors.partitioningBy(TagResponse::exists));
-
-        Set<Tag> existingTags = groupedByPresence.get(true).stream()
-                .map(existingTag -> tagRepository.findByCategoryAndName(existingTag.category(), existingTag.name()).get())
-                .collect(Collectors.toSet());
-        Set<Tag> newTags = createNewTags(groupedByPresence.get(false));
-
-        Set<Tag> itemTags = new HashSet<>(existingTags);
-        itemTags.addAll(newTags);
-        return itemTags;
-    }
-
-    private Set<Tag> createNewTags(List<TagResponse> tagResponses) {
-        Set<Tag> newTags = tagResponses.stream()
-                .map(newTag -> new Tag(newTag.name(), newTag.category(), newTag.shade()))
-                .collect(Collectors.toSet());
-        tagRepository.saveAll(newTags);
-        return newTags;
     }
 }

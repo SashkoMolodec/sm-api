@@ -2,22 +2,26 @@ package com.sashkomusic.domain.service;
 
 import com.sashkomusic.domain.model.ItemFormat;
 import com.sashkomusic.domain.model.tag.TagCategory;
+import com.sashkomusic.web.dto.TagDto;
 import com.sashkomusic.web.dto.create.ItemCreateDto;
-import com.sashkomusic.web.dto.ai.TagResponse;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingResponse;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.Filter;
+import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
+import static com.sashkomusic.domain.model.tag.TagCategory.*;
 import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 import static org.springframework.ai.chat.memory.ChatMemory.DEFAULT_CONVERSATION_ID;
 
@@ -37,10 +41,12 @@ public class AiService {
 
     private final ChatClient chatClient;
     private final EmbeddingModel embeddingModel;
+    private final VectorStore vectorStore;
 
     public AiService(VectorStore vectorStore, ChatClient chatClient, EmbeddingModel embeddingModel) {
         this.chatClient = chatClient;
         this.embeddingModel = embeddingModel;
+        this.vectorStore = vectorStore;
     }
 
     public String ask(String question, String conversationId) {
@@ -59,17 +65,23 @@ public class AiService {
         return ask(question, DEFAULT_CONVERSATION_ID);
     }
 
-    public List<TagResponse> askTags(ItemCreateDto item, Map<TagCategory, List<String>> availableTags) {
+    public List<TagDto> askTags(ItemCreateDto item) {
         String title = item.title();
         List<String> artists = item.artists();
         ItemFormat format = item.format();
 
         Prompt prompt = PromptTemplate.builder().resource(tagsAskPrompt).variables(
                 Map.of("title", title, "artists", artists.toString(), "format", format.name(),
-                        "availableTagCategories", TagCategory.concatenatedAll(),
-                        "availableTags", availableTags.toString())).build().create();
-        return chatClient.prompt(prompt).call().entity(new ParameterizedTypeReference<>() {
-        });
+                        "availableTagCategories", TagCategory.concatenatedAll())).build().create();
+
+        QuestionAnswerAdvisor advisor = QuestionAnswerAdvisor.builder(vectorStore)
+                .searchRequest(SearchRequest.builder().filterExpression(buildDocsFilterExpression(item)).build())
+                .build();
+
+        return chatClient.prompt(prompt)
+                .advisors(advisor)
+                .call().entity(new ParameterizedTypeReference<>() {
+                });
     }
 
     public String askTagShade(String name, TagCategory category) {
@@ -129,7 +141,10 @@ public class AiService {
         String candidate = s;
         for (int i = lines.length - 1; i >= 0; i--) {
             String line = lines[i].trim();
-            if (!line.isEmpty()) { candidate = line; break; }
+            if (!line.isEmpty()) {
+                candidate = line;
+                break;
+            }
         }
         String onlyLetters = candidate.replaceAll("[^A-Za-z]", "");
         onlyLetters = onlyLetters.toLowerCase(Locale.ROOT);
@@ -138,5 +153,35 @@ public class AiService {
         }
         if (onlyLetters.isEmpty()) return "gray";
         return onlyLetters;
+    }
+
+    private static Filter.Expression buildDocsFilterExpression(ItemCreateDto item) {
+        var b = new FilterExpressionBuilder();
+        FilterExpressionBuilder.Op op = null;
+
+        op = buildOrExpression(b, op, item.artists(), ARTIST.getName());
+        op = buildOrExpression(b, op, item.artists(), RELATED_ARTIST.getName());
+        op = op == null
+                ? b.eq(ALBUM.getName(), item.title())
+                : b.or(op, b.eq(ALBUM.getName(), item.title()));
+
+        return op.build();
+    }
+
+    private static FilterExpressionBuilder.Op buildOrExpression(
+            FilterExpressionBuilder builder,
+            FilterExpressionBuilder.Op currentOp,
+            List<String> values,
+            String fieldName) {
+
+        FilterExpressionBuilder.Op result = currentOp;
+        for (String value : values) {
+            if (result == null) {
+                result = builder.eq(fieldName, value);
+            } else {
+                result = builder.or(result, builder.eq(fieldName, value));
+            }
+        }
+        return result;
     }
 }

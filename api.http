@@ -31,6 +31,34 @@ Content-Type: application/json
   ]
 }
 
+###
+
+POST localhost:8080/items
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="json"
+Content-Type: application/json
+
+{
+  "title": "Лічи до ста. Симфонія № 1",
+  "releaseYear": 1994,
+  "format": "CASSETTE",
+  "artists": [
+    "Oleksandr Yurchenko"
+  ],
+  "tracks": [
+    {
+      "name": "Симфонія №1",
+      "artists": [
+        "Oleksandr Yurchenko"
+      ]
+    }
+  ],
+  "tags": [
+  ]
+}
+
 --WebAppBoundary
 Content-Disposition: form-data; name="images"; filename="test_image.jpg"
 Content-Type: image/jpeg

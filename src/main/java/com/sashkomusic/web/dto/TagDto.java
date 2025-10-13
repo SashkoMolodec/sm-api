@@ -9,4 +9,11 @@ public record TagDto(
         String name,
         String shade
 ) {
+    public static TagDto of(TagCategory category, String name, String shade) {
+        return new TagDto(category, name, shade);
+    }
+
+    public static TagDto of(TagCategory category, String name) {
+        return new TagDto(category, name, null);
+    }
 }

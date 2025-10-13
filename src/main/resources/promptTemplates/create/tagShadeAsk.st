@@ -1,4 +1,4 @@
-You are a precise color assigner. Your task is to choose a color for the tag with name "{name}" and category "{category}".
+Your task is to choose a color for the tag with name "{name}" and category "{category}".
 
 Rules:
 - Output must be EXACTLY one CSS named color, in lowercase (e.g., dimgray, lightcoral, darkslateblue).

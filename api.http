@@ -84,7 +84,7 @@ X_AI_CONVERSATION_ID: sashkoo
 Content-Type: application/json
 
 {
-  "question": "розкажи за quincy jones"
+  "question": "чи доданий альбом виконавця Скрябін в базу, назва альбому: Казки"
 }
 
 ###

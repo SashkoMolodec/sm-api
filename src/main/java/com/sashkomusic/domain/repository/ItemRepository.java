@@ -18,4 +18,11 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "GROUP BY i " +
             "ORDER BY tagCount DESC")
     List<Item> findByTags(@Param("tags") Set<String> tags);
+
+    @Query(value = "SELECT DISTINCT i.* FROM items i " +
+            "WHERE lower(i.title) LIKE lower(CONCAT('%', :title, '%')) " +
+            "AND EXISTS (SELECT 1 FROM unnest(i.artists) a WHERE lower(a) = ANY (:artistsLower))",
+            nativeQuery = true)
+    List<Item> findByTitleContainingIgnoreCaseAndAnyArtistIn(@Param("title") String title,
+                                                             @Param("artistsLower") String[] artistsLower);
 }

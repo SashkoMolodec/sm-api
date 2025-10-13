@@ -1,5 +1,6 @@
 package com.sashkomusic.config;
 
+import com.sashkomusic.domain.service.AiTools;
 import org.springframework.ai.anthropic.AnthropicChatModel;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
@@ -18,7 +19,8 @@ public class AiConfig {
 
     @Bean
     ChatClient chatClient(AnthropicChatModel chatModel,
-                          VectorStore vectorStore) {
+                          VectorStore vectorStore,
+                          AiTools aiTools) {
         return ChatClient.create(chatModel)
                 .mutate()
                 .defaultSystem(systemPrompt)
@@ -27,6 +29,7 @@ public class AiConfig {
                                 .searchRequest(SearchRequest.builder().build())
                                 .build()
                 )
+                .defaultTools(aiTools)
                 .build();
     }
 }

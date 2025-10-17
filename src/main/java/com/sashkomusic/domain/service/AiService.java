@@ -1,6 +1,5 @@
 package com.sashkomusic.domain.service;
 
-import com.sashkomusic.aop.UseWebSearchTool;
 import com.sashkomusic.domain.model.ItemFormat;
 import com.sashkomusic.domain.model.tag.TagCategory;
 import com.sashkomusic.web.dto.TagDto;
@@ -50,7 +49,6 @@ public class AiService {
         this.vectorStore = vectorStore;
     }
 
-    //@UseWebSearchTool
     public String ask(String question, String conversationId) {
         return chatClient.prompt()
                 .user(question)
@@ -67,7 +65,6 @@ public class AiService {
         return ask(question, DEFAULT_CONVERSATION_ID);
     }
 
-    @UseWebSearchTool
     public List<TagDto> askTags(ItemCreateDto item) {
         String title = item.title();
         List<String> artists = item.artists();
@@ -87,7 +84,6 @@ public class AiService {
                 });
     }
 
-    @UseWebSearchTool
     public String askTagShade(String name, TagCategory category) {
         Prompt prompt = PromptTemplate.builder().resource(askTagShadePrompt)
                 .variables(Map.of("name", name, "category", category.name())).build().create();
@@ -96,7 +92,6 @@ public class AiService {
         return normalizeShadeColor(raw);
     }
 
-    @UseWebSearchTool
     public TagCategory askTagCategory(String name) {
         Prompt prompt = PromptTemplate.builder().resource(askTagCategoryPrompt).variables(Map.of("name", name,
                 "tagCategories", TagCategory.concatenatedAll())
@@ -110,7 +105,6 @@ public class AiService {
         return toPgvectorLiteral(vector);
     }
 
-    @UseWebSearchTool
     public Set<String> extractTags(String userQuery, Set<String> tagDictionary) {
         Prompt prompt = PromptTemplate.builder()
                 .resource(tagsExtractPrompt)

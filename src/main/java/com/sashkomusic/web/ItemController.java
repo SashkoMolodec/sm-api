@@ -32,6 +32,7 @@ public class ItemController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ItemDto> create(@RequestPart("json") ItemCreateDto itemDto,
                                           @RequestPart("images") List<MultipartFile> images) {
+
         return ResponseEntity.ok(itemService.create(itemDto, images));
     }
 }

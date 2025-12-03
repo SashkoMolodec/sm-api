@@ -35,29 +35,16 @@ ext {
 dependencies {
     implementation platform('software.amazon.awssdk:bom:2.27.21')
 
-    implementation("org.apache.pdfbox:pdfbox:3.0.4")
-    implementation 'org.springframework.ai:spring-ai-pdf-document-reader'
-
     implementation 'software.amazon.awssdk:s3'
-    implementation 'org.springframework.ai:spring-ai-starter-vector-store-pgvector'
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
     implementation 'org.springframework.ai:spring-ai-starter-model-anthropic'
-    implementation 'org.springframework.ai:spring-ai-advisors-vector-store'
 
     implementation("org.zalando:logbook-spring-boot-starter:3.11.0")
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.flywaydb:flyway-core'
-    implementation 'org.flywaydb:flyway-database-postgresql'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'jakarta.validation:jakarta.validation-api:3.1.1'
-
-    implementation 'org.jsoup:jsoup:1.15.3'
-    implementation 'be.tarsos.dsp:core:2.5'
-    implementation 'be.tarsos.dsp:jvm:2.5'
-    implementation 'com.googlecode.soundlibs:mp3spi:1.9.5.4'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

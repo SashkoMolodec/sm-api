@@ -8,27 +8,23 @@ import lombok.Setter;
 import java.util.HashSet;
 import java.util.Set;
 
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
-@Table(name = "artists")
+@Table(name = "tags")
 @Entity
-public class Artist {
-
+public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String name;
 
-    @ManyToMany(mappedBy = "artists")
+    @ManyToMany(mappedBy = "tags")
     private Set<Release> releases = new HashSet<>();
 
-    @ManyToMany(mappedBy = "artists")
-    private Set<Track> tracks = new HashSet<>();
-
-    public Artist(String name) {
+    public Tag(String name) {
         this.name = name;
     }
 }

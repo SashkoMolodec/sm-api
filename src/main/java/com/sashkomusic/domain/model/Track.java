@@ -1,37 +1,61 @@
 package com.sashkomusic.domain.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Parent;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-@Data
-@NoArgsConstructor
-@Embeddable
+@Entity
+@Table(name = "tracks")
+@Getter
+@Setter
 public class Track {
-    @Parent
-    private Item item;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
-    private int position;
-
-    @Column(nullable = false)
-    private String name;
+    private String title;
 
     @Column
-    private String sourceUrl;
+    private Integer trackNumber;
 
-    @Column(name = "track_artists", nullable = false)
-    private List<String> artists = new ArrayList<>();
+    @Column
+    private Integer duration; // in seconds
 
-    public Track(int position, String name, String sourceUrl, List<String> artists) {
-        this.position = position;
-        this.name = name;
-        this.sourceUrl = sourceUrl;
-        this.artists = artists;
+    @Column
+    private String localPath;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "release_id", nullable = false)
+    private Release release;
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "track_artists",
+            joinColumns = @JoinColumn(name = "track_id"),
+            inverseJoinColumns = @JoinColumn(name = "artist_id")
+    )
+    private Set<Artist> artists = new HashSet<>();
+
+    public Track() {
+    }
+
+    public Track(String title, Integer trackNumber) {
+        this.title = title;
+        this.trackNumber = trackNumber;
+    }
+
+    public void addArtist(Artist artist) {
+        artists.add(artist);
+        artist.getTracks().add(this);
+    }
+
+    public void removeArtist(Artist artist) {
+        artists.remove(artist);
+        artist.getTracks().remove(this);
     }
 }

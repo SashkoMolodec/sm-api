@@ -1,8 +1,8 @@
 package com.sashkomusic.domain.model;
 
-public enum ItemFormat {
+public enum ReleaseFormat {
     VINYL,
-    CASSETTE,
     CD,
-    OTHER
+    CASSETTE,
+    DIGITAL
 }

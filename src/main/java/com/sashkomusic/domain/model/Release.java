@@ -25,7 +25,7 @@ public class Release {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Source source;
+    private SearchEngine source;
 
     @Column(nullable = false)
     private String title;

@@ -17,7 +17,14 @@ public class TrackController {
     private final TrackService trackService;
 
     @GetMapping("")
-    public ResponseEntity<TrackDto> findTrackByPath(@RequestParam String title) {
+    public ResponseEntity<TrackDto> findTrack(@RequestParam String title) {
         return ResponseEntity.ok(trackService.findByTitle(title));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<TrackDto> findTrackByArtistAndTitle(
+            @RequestParam String artist,
+            @RequestParam String title) {
+        return ResponseEntity.ok(trackService.findByArtistAndTitle(artist, title));
     }
 }

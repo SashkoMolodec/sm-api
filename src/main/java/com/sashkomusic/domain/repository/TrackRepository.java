@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface TrackRepository extends JpaRepository<Track, Long> {
+public interface TrackRepository extends JpaRepository<Track, Long>, TrackRepositoryCustom {
 
     Optional<Track> findByTitle(String title);
 
@@ -20,5 +20,4 @@ public interface TrackRepository extends JpaRepository<Track, Long> {
         AND REPLACE(LOWER(a.name), ' ', '_') = REPLACE(LOWER(:artist), ' ', '_')
         """)
     Optional<Track> findByArtistAndTitle(@Param("artist") String artist, @Param("title") String title);
-
 }

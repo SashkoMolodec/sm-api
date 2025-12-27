@@ -15,6 +15,9 @@ public interface TrackTagRepository extends JpaRepository<TrackTag, Long> {
     @Query("SELECT t.tagValue FROM TrackTag t WHERE t.trackId = :trackId AND t.tagName = 'RATING'")
     Optional<String> findRatingByTrackId(@Param("trackId") Long trackId);
 
+    @Query("SELECT t.tagValue FROM TrackTag t WHERE t.trackId = :trackId AND t.tagName = :tagName")
+    Optional<String> findByTrackIdAndTagName(@Param("trackId") Long trackId, @Param("tagName") String tagName);
+
     @Query("SELECT t FROM TrackTag t WHERE t.trackId IN :trackIds")
     List<TrackTag> findAllByTrackIds(@Param("trackIds") List<Long> trackIds);
 }

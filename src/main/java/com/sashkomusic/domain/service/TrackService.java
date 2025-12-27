@@ -31,8 +31,12 @@ public class TrackService {
                 .orElse("");
 
         String rating = trackTagRepository.findRatingByTrackId(track.getId()).orElse(null);
+        String djEnergy = trackTagRepository.findByTrackIdAndTagName(track.getId(), "DJ_ENERGY").orElse(null);
+        String djFunction = trackTagRepository.findByTrackIdAndTagName(track.getId(), "DJ_FUNCTION").orElse(null);
+        String comment = trackTagRepository.findByTrackIdAndTagName(track.getId(), "COMM").orElse(null);
 
-        return TrackDto.of(track.getId(), track.getLocalPath(), track.getTitle(), artistName, rating);
+        return TrackDto.of(track.getId(), track.getLocalPath(), track.getTitle(), artistName, rating,
+                djEnergy, djFunction, comment);
     }
 
     public TrackDto findByArtistAndTitle(String artist, String title) {
@@ -45,8 +49,12 @@ public class TrackService {
                 .orElse("");
 
         String rating = trackTagRepository.findRatingByTrackId(track.getId()).orElse(null);
+        String djEnergy = trackTagRepository.findByTrackIdAndTagName(track.getId(), "DJ_ENERGY").orElse(null);
+        String djFunction = trackTagRepository.findByTrackIdAndTagName(track.getId(), "DJ_FUNCTION").orElse(null);
+        String comment = trackTagRepository.findByTrackIdAndTagName(track.getId(), "COMM").orElse(null);
 
-        return TrackDto.of(track.getId(), track.getLocalPath(), track.getTitle(), artistName, rating);
+        return TrackDto.of(track.getId(), track.getLocalPath(), track.getTitle(), artistName, rating,
+                djEnergy, djFunction, comment);
     }
 
     public List<TrackWithTagsDto> findAllByTags(Map<String, String> tagFilters) {

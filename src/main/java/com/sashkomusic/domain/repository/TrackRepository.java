@@ -16,8 +16,8 @@ public interface TrackRepository extends JpaRepository<Track, Long>, TrackReposi
     @Query("""
         SELECT DISTINCT t FROM Track t
         JOIN t.artists a
-        WHERE REPLACE(LOWER(t.title), ' ', '_') = REPLACE(LOWER(:title), ' ', '_')
-        AND REPLACE(LOWER(a.name), ' ', '_') = REPLACE(LOWER(:artist), ' ', '_')
+        WHERE REPLACE(REPLACE(LOWER(t.title), ' ', ''), '+', '') = REPLACE(REPLACE(LOWER(:title), ' ', ''), '+', '')
+        AND REPLACE(REPLACE(LOWER(a.name), ' ', ''), '+', '') = REPLACE(REPLACE(LOWER(:artist), ' ', ''), '+', '')
         """)
     Optional<Track> findByArtistAndTitle(@Param("artist") String artist, @Param("title") String title);
 }
